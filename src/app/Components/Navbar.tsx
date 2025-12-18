@@ -157,7 +157,7 @@ export default function Navbar({ onMenuClick }: { onMenuClick?: () => void }) {
   //   ],
   // },
 
-  { title: "Settings", url: "/settings", icon: FiSettings },
+  // { title: "Settings", url: "/settings", icon: FiSettings },
 ];
 
 
