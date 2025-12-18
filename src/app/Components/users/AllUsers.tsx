@@ -39,7 +39,7 @@ export default function ALLUSERS() {
 
               <Button
                 variant="primary"
-                onClick={() => router.push('/users/add-users')}
+                onClick={() => router.push('/users/add-user')}
                 className="flex items-center gap-2 sm:hidden"
               >
                 <span>+</span> Add New
