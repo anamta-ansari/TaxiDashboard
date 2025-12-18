@@ -165,7 +165,7 @@ const items = [
   //   ],
   // },
 
-  { title: "Settings", url: "/settings", icon: FiSettings },
+  // { title: "Settings", url: "/settings", icon: FiSettings },
 ];
 
 export function AppSidebar() {
