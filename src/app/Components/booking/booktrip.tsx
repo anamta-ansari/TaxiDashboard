@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface Location {
   address: string;
@@ -14,6 +15,8 @@ interface Prediction {
 }
 
 export default function BookTrip() {
+  const router = useRouter();
+  
   const [date, setDate] = useState('December 17, 2025');
   const [time, setTime] = useState('ASAP');
   const [pickupLocation, setPickupLocation] = useState('');
@@ -91,7 +94,7 @@ export default function BookTrip() {
         icon: {
           path: google.maps.SymbolPath.CIRCLE,
           scale: 10,
-          fillColor: '#22c55e',
+          fillColor: '#FF0000',
           fillOpacity: 1,
           strokeColor: '#ffffff',
           strokeWeight: 2,
@@ -106,7 +109,7 @@ export default function BookTrip() {
         icon: {
           path: google.maps.SymbolPath.CIRCLE,
           scale: 10,
-          fillColor: '#000000',
+          fillColor: '#FF0000',
           fillOpacity: 1,
           strokeColor: '#ffffff',
           strokeWeight: 2,
@@ -121,7 +124,7 @@ export default function BookTrip() {
           { lat: dropoff.lat, lng: dropoff.lng },
         ],
         geodesic: true,
-        strokeColor: '#3b82f6',
+        strokeColor: '#FF0000',
         strokeOpacity: 0.8,
         strokeWeight: 3,
         map: googleMapRef.current,
@@ -214,21 +217,44 @@ export default function BookTrip() {
   };
 
   const handleBookNow = () => {
-    const bookingData = {
+    if (!pickup || !dropoff) {
+      alert('Please select both pickup and drop-off locations');
+      return;
+    }
+
+    // Calculate random amount
+    const amount = `$${(Math.random() * 50 + 20).toFixed(2)}`;
+
+    // Create new booking
+    const newBooking = {
+      id: `booking-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       date,
       time,
-      pickup,
-      dropoff,
+      taxiCompany: 'Swift Rides',
+      from: pickup.address,
+      to: dropoff.address,
+      payment: paymentMethod,
+      amount,
+      vehicleType: vehicleType || 'Standard',
+      noteToDriver,
+      returnTrip,
+      status: 'in-progress',
       flightNumber,
       arrivalTime,
       terminal,
-      paymentMethod,
-      vehicleType,
-      noteToDriver,
-      returnTrip,
     };
-    console.log('Booking:', bookingData);
+
+    // Get existing bookings from localStorage
+    const existingBookings = JSON.parse(localStorage.getItem('bookings') || '[]');
+    
+    // Add new booking to the beginning
+    const updatedBookings = [newBooking, ...existingBookings];
+    
+    // Save to localStorage
+    localStorage.setItem('bookings', JSON.stringify(updatedBookings));
+
     alert('Trip booked successfully!');
+    router.push('/book-trip/history');
   };
 
   return (
@@ -348,45 +374,6 @@ export default function BookTrip() {
             </button>
           </div>
 
-          {/* Flight Details */}
-          {/* <div className="grid grid-cols-3 gap-4 mb-6">
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-2 uppercase tracking-wide">
-                Flight Number
-              </label>
-              <input
-                type="text"
-                value={flightNumber}
-                onChange={(e) => setFlightNumber(e.target.value)}
-                placeholder="Flight Number"
-                className="w-full px-4 py-3 bg-gray-50 border-0 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-2 uppercase tracking-wide">
-                Arrival Time
-              </label>
-              <input
-                type="text"
-                value={arrivalTime}
-                onChange={(e) => setArrivalTime(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-50 border-0 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-2 uppercase tracking-wide">
-                Terminal
-              </label>
-              <input
-                type="text"
-                value={terminal}
-                onChange={(e) => setTerminal(e.target.value)}
-                placeholder="Terminal"
-                className="w-full px-4 py-3 bg-gray-50 border-0 rounded-lg text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          </div> */}
-
           {/* Payment Method */}
           <div className="mb-6">
             <label className="block text-xs font-medium text-gray-600 mb-2 uppercase tracking-wide">
@@ -493,12 +480,15 @@ export default function BookTrip() {
 
           {/* Action Buttons */}
           <div className="flex gap-4">
-            <button className="flex-1 px-6 py-2 text-gray-700 bg-gray-300 font-medium rounded-lg hover:bg-gray-100 transition-colors">
+            <button 
+              onClick={() => router.push('/history')}
+              className="flex-1 px-6 py-2 text-gray-700 bg-gray-300 font-medium rounded-lg hover:bg-gray-100 transition-colors"
+            >
               Cancel
             </button>
             <button
               onClick={handleBookNow}
-              className="flex-1 px-6 py-2 bg-blue-500 text-white font-medium rounded-lg hover:bg-orange-600 transition-colors"
+              className="flex-1 px-6 py-2 bg-blue-500 text-white font-medium rounded-lg hover:bg-blue-600 transition-colors"
             >
               Book Now
             </button>
@@ -506,7 +496,7 @@ export default function BookTrip() {
         </div>
       </div>
 
-      {/* Location Info Overlays - Positioned away from form */}
+      {/* Location Info Overlays */}
       {pickup && (
         <div className="absolute top-8 right-8 bg-white rounded-lg shadow-lg p-4 max-w-sm z-10">
           <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Pick-up</div>
